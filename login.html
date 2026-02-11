@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuristic Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+   <div class="background-container">
+    <div class="glass-card">
+        <div id="login-section">
+            <h2>JOIN US!</h2>
+            <p>Create your new account</p>
+            <form id="loginForm">
+                <div class="input-group">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="username" required>
+                    <label for="username">Username</label>
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="password" required>
+                    <label for="password">Password</label>
+                </div>
+                <button type="submit" class="login-btn">LOGIN</button>
+                <div class="footer-links">
+                    <a href="signup.html" class="signup-link">Sign Up</a>
+                </div>
+            </form>
+        </div>
+
+        <div id="qr-container" style="display: none; text-align: center;">
+            <h2 class="neon-text">SCANNER</h2>
+            <div class="scanner-frame">
+                <div id="qr-reader"></div>
+                <div class="corner top-left"></div>
+                <div class="corner top-right"></div>
+                <div class="corner bottom-left"></div>
+                <div class="corner bottom-right"></div>
+                <div class="scan-line"></div>
+            </div>
+            <h3 class="neon-text-small">SCAN QR CODE</h3>
+            <button id="logout-btn" class="logout-btn">Logout</button>
+        </div>
+    </div>
+</div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+  // PASTE YOUR FIREBASE CONFIG HERE (from your Firebase Console Settings)
+  const firebaseConfig = {
+  // ... your other keys ...
+  databaseURL: "https://schoolsecurity-fe9c9-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "schoolsecurity-fe9c9",
+};
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+</script>
+     <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="script.js"></script>
+</body>
+</html>
