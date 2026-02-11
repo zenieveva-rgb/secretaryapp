@@ -1,0 +1,424 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    
+    /* Path to your background image */
+    background: url('image/signup.png') no-repeat center center; 
+    
+    /* ADD THIS LINE: This ensures the image fills the screen perfectly */
+    background-size: cover; 
+    
+    /* Standard futuristic font */
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    
+    /* Centers the panels on the screen */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; 
+}
+
+/* Creating the glowing abstract shapes from your images */
+.background-container::before {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 100px;
+    background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+    transform: rotate(-45deg);
+    filter: blur(80px);
+    z-index: -1;
+    top: 20%;
+    left: 10%;
+}
+
+/* The Glass Card */
+.glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 40px;
+    width: 400px;
+    text-align: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+    color: white;
+}
+
+h2 {
+    font-size: 2rem;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 30px;
+}
+
+/* Input Fields */
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-group i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 12px 12px 45px;
+    border-radius: 25px;
+    border: none;
+    outline: none;
+    background: white;
+    font-size: 1rem;
+}
+
+/* Checkbox Styling */
+.options, .footer-links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkbox-container input {
+    margin-right: 8px;
+}
+
+/* Login Button */
+.login-btn {
+    width: 60%;
+    padding: 12px;
+    border-radius: 25px;
+    border: none;
+    background: #1e4ea1;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-bottom: 20px;
+}
+
+.login-btn:hover {
+    background: #2575fc;
+    box-shadow: 0 0 15px #2575fc;
+}
+
+.signup-link {
+    color: #00d2ff;
+    text-decoration: none;
+}
+
+/* Scanner HUD Design */
+.scanner-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #00ffcc; /* Neon Cyan/Green */
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+}
+
+.scanner-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 255, 204, 0.3);
+    padding-bottom: 5px;
+}
+
+.scanner-frame {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    border: 1px solid rgba(0, 255, 204, 0.2);
+    padding: 10px;
+    background: transparent;
+}
+
+/* Corner Accents */
+.corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #00ffcc;
+}
+.top-left { top: 0; left: 0; border-right: none; border-bottom: none; }
+.top-right { top: 0; right: 0; border-left: none; border-bottom: none; }
+.bottom-left { bottom: 0; left: 0; border-right: none; border-top: none; }
+.bottom-right { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+/* Animated Scan Line */
+.scan-line {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: #00ffcc;
+    box-shadow: 0 0 15px #00ffcc;
+    top: 0;
+    left: 0;
+    animation: scan 2s linear infinite;
+    z-index: 10;
+}
+
+@keyframes scan {
+    0% { top: 0%; }
+    100% { top: 100%; }
+}
+
+.logout-scanner-btn {
+    background: #319724;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 20px;
+    margin-top: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.logout-scanner-btn:hover {
+    background: #0db73b;
+    box-shadow: 0 0 10px #176436;
+}
+
+#qr-reader {
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+}
+
+/* Neon Text Effects */
+.neon-text {
+    color: #00ffcc;
+    text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
+    margin-bottom: 20px;
+    letter-spacing: 3px;
+}
+
+.neon-text-small {
+    color: #00ffcc;
+    font-size: 0.9rem;
+    margin-top: 15px;
+    text-shadow: 0 0 5px #00ffcc;
+}
+
+/* Scanner Frame */
+.scanner-wrapper {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 0 auto;
+    border: 2px solid rgba(0, 255, 204, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+
+/* Red Logout Button */
+.logout-btn {
+    background: #ff4b5c;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 20px;
+    margin-top: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 0 15px rgba(255, 75, 92, 0.4);
+    transition: 0.3s;
+}
+
+.logout-btn:hover {
+    background: #ff2a3f;
+    box-shadow: 0 0 20px rgba(255, 75, 92, 0.6);
+}
+/* 1. Page Entrance Animation */
+body {
+    animation: fadeInPage 0.8s ease-in-out;
+}
+
+@keyframes fadeInPage {
+    from { opacity: 0; transform: scale(1.05); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* 2. Smooth Textbox Animation */
+.input-group input {
+    width: 100%;
+    padding: 12px 12px 12px 45px;
+    border-radius: 25px;
+    border: 2px solid transparent; /* invisible border by default */
+    outline: none;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    transition: all 0.3s ease; /* This makes the click smooth */
+}
+
+/* When you click inside the textbox */
+.input-group input:focus {
+    background: #ffffff;
+    border-color: #00ffcc;
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+/* 3. Smooth Button Hover */
+.login-btn {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.login-btn:active {
+    transform: scale(0.95); /* Clicks "inward" when pressed */
+}
+
+/* 4. Link Hover Animation */
+.signup-link {
+    display: inline-block;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.signup-link:hover {
+    transform: translateX(5px);
+    color: #00ffcc;
+}
+.input-group {
+    position: relative;
+    margin-bottom: 30px; /* Increased space for the floating label */
+}
+
+/* Style the input */
+.input-group input {
+    width: 100%;
+    padding: 15px 15px 15px 45px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    color: white;
+    outline: none;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* Style the Label (the text that moves) */
+.input-group label {
+    position: absolute;
+    left: 45px; /* Aligned with the icon */
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.6);
+    pointer-events: none; /* Allows clicking "through" the label */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- THE ANIMATION LOGIC --- */
+
+/* When the input is clicked OR has text inside */
+.input-group input:focus + label,
+.input-group input:valid + label {
+    top: -10px;
+    left: 10px;
+    font-size: 0.85rem;
+    color: #00ffcc;
+    text-shadow: 0 0 5px #00ffcc;
+    background: transparent;
+    padding: 0 5px;
+}
+
+/* Input glow effect when active */
+.input-group input:focus {
+    border-color: #00ffcc;
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure icons stay visible */
+.input-group i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #00ffcc;
+    transition: 0.3s;
+}
+#login-box, #signup-box {
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Center all elements inside the QR container */
+#qr-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers items horizontally */
+    justify-content: center; /* Centers items vertically if there is extra space */
+    width: 74%;
+}
+
+/* Ensure the glass card itself centers its content */
+.glass-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    /* ... your existing glass-card styles (background, blur, etc.) ... */
+}
+
+/* Adjust the frame margin to be centered */
+.scanner-frame {
+    position: center;
+    width: 250px;
+    height: 200px;
+    margin: 15px 0; /* Vertical margin only, horizontal is handled by flex */
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(0, 255, 204, 0.2);
+    overflow: hidden;
+}
+
+/* Keep the text and buttons neat */
+.neon-text {
+    margin-bottom: 10px;
+}
+
+.neon-text-small {
+    margin: 10px 0;
+}
