@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuristic Login & Scanner</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-container">
+        <div class="glass-card">
+            <div id="login-section">
+                <h2>JOIN US!</h2>
+                <p>Login to access the scanner</p>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="username" required>
+                        <label for="username">Username</label>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="password" required>
+                        <label for="password">Password</label>
+                    </div>
+                    <button type="submit" class="login-btn">LOGIN</button>
+                    <div class="footer-links">
+                        <a href="signup.html" class="signup-link">Sign Up</a>
+                    </div>
+                </form>
+            </div>
+
+            <div id="qr-container" style="display: none; flex-direction: column; align-items: center;">
+                <h2 class="neon-text">SCANNER</h2>
+                <div class="scanner-frame">
+                    <div id="qr-reader" style="width: 100%;"></div>
+                    <div class="corner top-left"></div>
+                    <div class="corner top-right"></div>
+                    <div class="corner bottom-left"></div>
+                    <div class="corner bottom-right"></div>
+                    <div class="scan-line"></div>
+                </div>
+                <h3 class="neon-text-small">READY TO SCAN</h3>
+                <button id="logout-btn" class="logout-btn">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="script.js"></script>
+</body>
+</html>
