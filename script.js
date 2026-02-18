@@ -1,4 +1,4 @@
-// --- 1. FIREBASE CONFIGURATION (From your Screenshot) ---
+// --- 1. FIREBASE CONFIGURATION ---
 const firebaseConfig = {
     apiKey: "AIzaSyBdlEvDlQ1qWr8xdL4bV25NW4RgcTajYqM",
     authDomain: "database-98a70.firebaseapp.com",
@@ -15,57 +15,50 @@ if (!firebase.apps.length) {
 }
 const database = firebase.database();
 
-// --- 2. SIGNUP LOGIC (Saves to Firebase) ---
-const signupForm = document.getElementById('signupForm');
-if (signupForm) {
-    signupForm.addEventListener('submit', function(e) {
-        e.preventDefault(); 
-        const email = document.getElementById('newEmail').value;
-        const username = document.getElementById('newUsername').value;
-        const password = document.getElementById('newPassword').value;
-
-        // Save to Firebase under 'users' folder
-        database.ref('users/' + username).set({
-            email: email,
-            username: username,
-            password: password
-        }).then(() => {
-            alert("Account created successfully! Redirecting to login...");
-            window.location.href = "index.html"; 
-        }).catch(err => {
-            alert("Error: " + err.message);
-        });
-    });
-}
-
-// --- 3. LOGIN LOGIC (Checks Firebase) ---
+// --- 2. NAVIGATION & UI CONTROL ---
 const loginForm = document.getElementById('loginForm');
+const signupForm = document.getElementById('signupForm');
 const qrContainer = document.getElementById('qr-container');
 const loginSection = document.getElementById('login-section');
 
-if (loginForm) {
-    loginForm.addEventListener('submit', function(e) {
+// --- 3. SIGNUP LOGIC ---
+if (signupForm) {
+    signupForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const userIn = document.getElementById('username').value;
-        const passIn = document.getElementById('password').value;
-        
-        database.ref('users/' + userIn).once('value').then((snapshot) => {
-            const userData = snapshot.val();
-            if (userData && userData.password === passIn) {
-                alert("Login Successful!");
-                loginSection.style.display = "none";
-                qrContainer.style.display = "flex";
-                startScanner();
-            } else {
-                alert("Invalid Username or Password.");
-            }
-        });
+        const userData = {
+            email: document.getElementById('newEmail').value,
+            username: document.getElementById('newUsername').value,
+            password: document.getElementById('newPassword').value
+        };
+
+        localStorage.setItem('registeredUser', JSON.stringify(userData));
+        alert("Account Created! Redirecting...");
+        window.location.href = "login.html";
     });
 }
 
-// --- 4. SCANNER LOGIC (Saves Attendance to Firebase) ---
+// --- 4. LOGIN LOGIC ---
+if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const userIn = document.getElementById('username').value;
+        const passIn = document.getElementById('password').value;
+        const savedData = JSON.parse(localStorage.getItem('registeredUser'));
+
+        if (savedData && userIn === savedData.username && passIn === savedData.password) {
+            loginSection.style.display = "none";
+            qrContainer.style.display = "flex";
+            startScanner();
+        } else {
+            alert("Invalid Credentials. Please register first.");
+        }
+    });
+}
+
+// --- 5. THE SCANNER (The Filtered Logic) ---
 function startScanner() {
     const html5QrCode = new Html5Qrcode("qr-reader");
+    
     const config = { 
         fps: 20, 
         qrbox: { width: 250, height: 250 },
@@ -73,32 +66,40 @@ function startScanner() {
     };
 
     html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
-        const details = decodedText.split(","); 
-        let studentID = details[0]?.trim() || "N/A";
-        let studentName = details[1]?.trim() || details[0]?.trim();
-        let studentGrade = details[2]?.trim() || "N/A";
+        // ASSUMED QR FORMAT: "LRN, Full Name, Grade/Section"
+        const parts = decodedText.split(",");
 
-        // Realtime Database Push
-        database.ref('attendance').push({
-            lrn: studentID,
-            displayName: studentName,
-            grade: studentGrade,
-            timestamp: Date.now()
-        }).then(() => {
-            alert("✅ Logged: " + studentName);
-        }).catch(err => {
-            alert("Firebase Error: " + err.message);
-        });
+        if (parts.length >= 2) {
+            // We skip parts[0] (LRN) and capture the rest
+            const fullName = parts[1]?.trim(); 
+            const gradeSection = parts[2]?.trim() || "No Grade Provided";
+            
+            // Create a clean, readable timestamp
+            const now = new Date();
+            const timeString = now.toLocaleDateString() + " | " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    }).catch(err => {
-        console.error("Scanner error:", err);
-    });
+            // Push ONLY the specific info you want to Firebase
+            database.ref('attendance').push({
+                studentName: fullName,
+                grade: gradeSection,
+                scannedAt: timeString
+            })
+            .then(() => {
+                alert(`SUCCESS\nScanned: ${fullName}\nGrade: ${gradeSection}`);
+            })
+            .catch(err => alert("Database Error: " + err.message));
+
+        } else {
+            alert("Error: QR Code format not recognized.");
+        }
+
+    }).catch(err => console.error("Scanner Error:", err));
 }
 
-// --- 5. LOGOUT LOGIC ---
+// --- 6. LOGOUT ---
 const logoutBtn = document.getElementById('logout-btn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-        location.reload(); 
+        window.location.reload(); 
     });
 }
