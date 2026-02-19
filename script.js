@@ -43,6 +43,35 @@ if (loginForm) {
         }
     });
 }
+// --- SIGNUP LOGIC (Put this in your script.js) ---
+const signupForm = document.getElementById('signupForm');
+
+if (signupForm) {
+    signupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        // 1. Get values from the form
+        const email = document.getElementById('newEmail').value;
+        const user = document.getElementById('newUsername').value;
+        const pass = document.getElementById('newPassword').value;
+
+        // 2. Create the user object
+        const userData = {
+            email: email,
+            username: user,
+            password: pass
+        };
+
+        // 3. Save to LocalStorage (This makes it "stick" in the browser)
+        localStorage.setItem('registeredUser', JSON.stringify(userData));
+        
+        // 4. Confirmation
+        alert("Account Created! You can now log in.");
+        
+        // 5. REDIRECT: This takes you back to your index.html (Login Form)
+        window.location.href = "index.html"; 
+    });
+}
 
 // --- 4. SCANNER LOGIC ---
 function startScanner() {
