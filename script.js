@@ -69,43 +69,41 @@ function startScanner() {
         aspectRatio: 1.0 
     };
 
-    html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
-        // Prevent multiple saves for the same scan
-        if (isProcessing) return; 
+   html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+    if (isProcessing) return; 
 
-        // Split text by comma or pipe (Handles "LRN, Name, Grade")
-        const parts = decodedText.split(/[,|]/);
+    // 1. Split the data
+    const parts = decodedText.split('|');
 
-        // FILTER: Skip parts[0] (LRN)
-        // Clean labels like "Name:" if they exist in the QR
-        let fullName = parts[1] ? parts[1].replace(/.*:/, "").trim() : null;
-        let gradeSection = parts[2] ? parts[2].replace(/.*:/, "").trim() : "N/A";
+    // 2. Assign variables but SKIP parts[0] (The LRN)
+    // parts[0] is the LRN (Ignored)
+    // parts[1] is the Full Name
+    // parts[2] is the Grade/Section
+    let fullName = parts[1] ? parts[1].trim() : null;
+    let gradeSection = parts[2] ? parts[2].trim() : "N/A";
 
-        if (fullName && fullName !== "undefined" && fullName !== "") {
-            isProcessing = true; // Lock the scanner
+    // 3. Save to Firebase (LRN is NOT included here)
+    if (fullName && fullName !== "") {
+        isProcessing = true; 
 
-            const now = new Date();
-            const timeString = now.toLocaleDateString() + " | " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const now = new Date();
+        const timeString = now.toLocaleDateString() + " | " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            // Push ONLY Name, Grade, and Time to Firebase
-            database.ref('attendance').push({
-                studentName: fullName,
-                grade: gradeSection,
-                scannedAt: timeString
-            })
-            .then(() => {
-                alert(`✅ LOGGED: ${fullName}\nGRADE: ${gradeSection}`);
-                
-                // Wait 3 seconds before allowing another scan
-                setTimeout(() => { isProcessing = false; }, 3000);
-            })
-            .catch(err => {
-                alert("Firebase Error: " + err.message);
-                isProcessing = false;
-            });
-        }
-    }).catch(err => console.error("Scanner Error:", err));
-}
+        database.ref('attendance').push({
+            studentName: fullName, // This goes to your "NAME" column
+            grade: gradeSection,   // This goes to your "GRADE" column
+            scannedAt: timeString  // This goes to your "TIME" column
+        })
+        .then(() => {
+            alert(`✅ LOGGED: ${fullName}`);
+            setTimeout(() => { isProcessing = false; }, 3000);
+        })
+        .catch(err => {
+            console.error("Firebase Error:", err);
+            isProcessing = false;
+        });
+    }
+});
 
 // --- 7. LOGOUT LOGIC ---
 const logoutBtn = document.getElementById('logout-btn');
