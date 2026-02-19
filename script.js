@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-import { getDatabase, ref, set, get, child, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+import { getDatabase, ref, set, get, child, push } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
 // --- 1. FIREBASE CONFIGURATION ---
 const firebaseConfig = {
@@ -15,11 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// --- 2. GLOBAL STATE ---
-let isProcessing = false;
-let html5QrCode = null;
-
-// --- 3. SIGN UP LOGIC ---
+// --- 2. SIGN UP LOGIC (Run only on signup.html) ---
 const signupForm = document.getElementById('signupForm');
 if (signupForm) {
     signupForm.addEventListener('submit', (e) => {
@@ -28,17 +24,18 @@ if (signupForm) {
         const user = document.getElementById('newUsername').value;
         const pass = document.getElementById('newPassword').value;
 
+        // Save user to Firebase
         set(ref(db, 'users/' + user), {
             email: email,
             password: pass
         }).then(() => {
-            alert("Account created successfully!");
+            alert("Account created! Redirecting to login...");
             window.location.href = "index.html"; 
         }).catch((err) => alert("Error: " + err.message));
     });
 }
 
-// --- 4. LOGIN LOGIC ---
+// --- 3. LOGIN LOGIC (Run only on index.html) ---
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
@@ -48,6 +45,7 @@ if (loginForm) {
 
         get(child(ref(db), `users/${user}`)).then((snapshot) => {
             if (snapshot.exists() && snapshot.val().password === pass) {
+                // Success: Switch UI
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('qr-container').style.display = 'flex';
                 startScanner();
@@ -58,34 +56,34 @@ if (loginForm) {
     });
 }
 
-// --- 5. SCANNER LOGIC ---
+// --- 4. SCANNER LOGIC ---
+let isProcessing = false;
+let html5QrCode = null;
+
 function startScanner() {
     if (html5QrCode) html5QrCode.stop().catch(() => {});
-    
     html5QrCode = new Html5Qrcode("qr-reader");
-    const config = { fps: 15, qrbox: { width: 250, height: 250 } };
+    
+    html5QrCode.start(
+        { facingMode: "environment" }, 
+        { fps: 15, qrbox: { width: 250, height: 250 } }, 
+        (decodedText) => {
+            if (isProcessing) return;
+            isProcessing = true;
 
-    html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
-        if (isProcessing) return;
-        isProcessing = true;
-
-        const parts = decodedText.split('|');
-        const lrn = parts[0]?.trim() || "N/A";
-        const fullName = parts[1]?.trim() || "Unknown";
-        const grade = parts[2]?.trim() || "N/A";
-
-        const timeString = new Date().toLocaleString();
-
-        push(ref(db, 'attendance'), {
-            lrn, studentName: fullName, grade, scannedAt: timeString
-        }).then(() => {
-            alert(`✅ Logged: ${fullName}`);
-            setTimeout(() => { isProcessing = false; }, 3000);
-        });
-    }).catch(err => console.error("Camera error:", err));
+            const parts = decodedText.split('|');
+            push(ref(db, 'attendance'), {
+                lrn: parts[0] || "N/A",
+                studentName: parts[1] || "Unknown",
+                grade: parts[2] || "N/A",
+                scannedAt: new Date().toLocaleString()
+            }).then(() => {
+                alert("✅ Logged: " + (parts[1] || "Student"));
+                setTimeout(() => { isProcessing = false; }, 3000);
+            });
+        }
+    ).catch(err => console.error(err));
 }
 
-// --- 6. LOGOUT ---
-document.getElementById('logout-btn')?.addEventListener('click', () => {
-    location.reload();
-});
+// Logout button
+document.getElementById('logout-btn')?.addEventListener('click', () => location.reload());
