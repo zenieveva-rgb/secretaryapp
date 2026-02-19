@@ -24,35 +24,52 @@ let isProcessing = false;
 let html5QrCode = null;
 
 // --- 3. SCANNER LOGIC ---
+// --- SCANNER LOGIC ---
 function startScanner() {
     if (html5QrCode) {
         html5QrCode.stop().catch(err => console.log(err));
     }
+
     html5QrCode = new Html5Qrcode("qr-reader");
-    const config = { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+    
+    const config = { 
+        fps: 15, 
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0 
+    };
 
     html5QrCode.start(
         { facingMode: "environment" }, 
         config, 
         (decodedText) => {
             if (isProcessing) return; 
+
+            // Split the data: format is LRN|Name|Grade
             const parts = decodedText.split('|');
+
+            // Now we extract all three parts:
+            let lrn = parts[0] ? parts[0].trim() : "N/A";
             let fullName = parts[1] ? parts[1].trim() : null;
             let gradeSection = parts[2] ? parts[2].trim() : "N/A";
 
+            // If the name exists, process the log
             if (fullName && fullName !== "") {
                 isProcessing = true; 
+
                 const now = new Date();
                 const timeString = now.toLocaleDateString() + " | " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+                // Push to Firebase
                 // Use 'push' for Firebase V9
                 push(ref(db, 'attendance'), {
+                    lrn: lrn,
                     studentName: fullName,
                     grade: gradeSection,
                     scannedAt: timeString
                 })
                 .then(() => {
                     alert(`✅ LOGGED: ${fullName}\nGrade: ${gradeSection}`);
+                    // Cooldown to prevent double scanning
                     setTimeout(() => { isProcessing = false; }, 3000);
                 })
                 .catch(err => {
@@ -61,7 +78,9 @@ function startScanner() {
                 });
             }
         }
-    ).catch(err => console.error("Camera Error:", err));
+    ).catch(err => {
+        console.error("Camera Start Error:", err);
+    });
 }
 
 // --- 4. THE FIX: ERASER (History Only) ---
