@@ -3,51 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futuristic Login & Scanner</title>
+    <title>Secretary Pro | Login</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="background-container">
+    <!-- Background Elements -->
+    <div class="bg-animation"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div class="toast-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <div>
+            <div style="font-weight: 600; margin-bottom: 2px;">Success</div>
+            <div style="font-size: 0.9rem; opacity: 0.8;" id="toast-message">Student logged successfully</div>
+        </div>
+    </div>
+
+    <div class="container">
         <div class="glass-card">
-            <div id="login-section">
-                <h2>JOIN US!</h2>
-                <p>Login to access the scanner</p>
-                <form id="loginForm">
-                    <div class="input-group">
-                        <i class="fa-solid fa-user"></i>
-                        <input type="text" id="username" required placeholder=" ">
-                        <label>Username</label>
-                    </div>
-                    <div class="input-group">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="password" required placeholder=" ">
-                        <label>Password</label>
-                    </div>
-                    <button type="submit" class="login-btn">LOGIN</button>
-                    <div class="footer-links">
-                        <a href="signup.html" class="signup-link">Sign Up</a>
-                    </div>
-                </form>
+            <div class="header">
+                <div class="logo">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h1>Welcome Back</h1>
+                <p class="subtitle">Sign in to access the scanner</p>
             </div>
 
-            <div id="qr-container" style="display: none;">
-                <h2 class="neon-text">SCANNER</h2>
-                <div class="scanner-frame">
-                    <div id="qr-reader"></div> 
-                    <div class="corner top-left"></div>
-                    <div class="corner top-right"></div>
-                    <div class="corner bottom-left"></div>
-                    <div class="corner bottom-right"></div>
-                    <div class="scan-line"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="username" placeholder=" " required autocomplete="off">
+                    <label class="floating-label">Username</label>
                 </div>
-                <h3 class="neon-text-small">READY TO SCAN</h3>
-                <button id="logout-btn" class="logout-btn">Logout</button>
+
+                <div class="form-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="password" placeholder=" " required>
+                    <label class="floating-label">Password</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    <span>Sign In</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+
+            <div class="link-text">
+                Don't have an account? <a href="signup.html" class="link">Create one</a>
             </div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script type="module" src="script.js"></script>
 </body>
 </html>
