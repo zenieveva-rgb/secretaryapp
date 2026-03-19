@@ -36,7 +36,7 @@ function showToast(message, type = 'success') {
         toast.innerHTML = '<i class="fas fa-check" style="font-size:20px;color:#05ffa1;"></i><span id="toast-msg"></span>';
         document.body.appendChild(toast);
     }
-    const msg = document.getElementById('toast-msg') || toast.querySelector('span');
+const msg = document.getElementById('toast-msg') || document.getElementById('toast-message') || toast.querySelector('span');
     const icon = toast.querySelector('i');
     msg.textContent = message;
     if (type === 'error') {
