@@ -1,13 +1,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
-// YOUR EXACT DATABASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyBU4Mvwjuv2HOscvYyQT4UwHNsyoXIr6Kw",
-  authDomain: "schoolsecurity-fe9c9.firebaseapp.com",
-  databaseURL: "https://schoolsecurity-fe9c9-default-rtdb.asia-southeast1.firebasedatabase.app/",
-  projectId: "schoolsecurity-fe9c9",
-  storageBucket: "schoolsecurity-fe9c9.appspot.com",
+  authDomain: "school-secretary-app.firebaseapp.com",
+  databaseURL: "https://school-secretary-app-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId: "school-secretary-app",
+  storageBucket: "school-secretary-app.appspot.com",
   messagingSenderId: "507429367336",
   appId: "1:507429367336:web:796e381a780a33ef98cf1d"
 };
