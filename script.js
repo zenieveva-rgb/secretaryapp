@@ -6,19 +6,19 @@ const firebaseConfig = {
   authDomain: "school-secretary-app.firebaseapp.com",
   databaseURL: "https://school-secretary-app-default-rtdb.asia-southeast1.firebasedatabase.app/",
   projectId: "school-secretary-app",
-  storageBucket: "school-secretary-app.appspot.com",
+  storageBucket: "school-secretary-app.firebasestorage.app",
   messagingSenderId: "507429367336",
   appId: "1:507429367336:web:796e381a780a33ef98cf1d"
 };
 
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Secretary paths (SAFE - separate from your existing data)
 const PATHS = {
-    pendingRequests: 'secretary/pendingRequests',
-    users: 'secretary/users',
-    attendance: 'secretary/attendance'
+  pendingRequests: 'pendingRequests',
+  users: 'users', 
+  attendance: 'attendance'
 };
 
 // Toast function
