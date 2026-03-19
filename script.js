@@ -1,15 +1,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-import { getDatabase, ref, set, get, child, push } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+import { getDatabase, ref, set, get, child, push, remove } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
-// Firebase Config
+// ✅ YOUR NEW SECURE FIREBASE CONFIG
 const firebaseConfig = {
-    apiKey: "AIzaSyBdlEvDlQ1qWr8xdL4bV25NW4RgcTajYqM",
-    authDomain: "database-98a70.firebaseapp.com",
-    databaseURL: "https://database-98a70-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "database-98a70",
-    storageBucket: "database-98a70.firebasestorage.app",
-    messagingSenderId: "460345885965",
-    appId: "1:460345885965:web:8484da766b979a0eaf9c44"
+  apiKey: "AIzaSyBU4Mvwjuv2HOscvYyQT4UwHNsyoXIr6Kw",
+  authDomain: "school-secretary-app.firebaseapp.com",
+  databaseURL: "https://school-secretary-app-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "school-secretary-app",
+  storageBucket: "school-secretary-app.firebasestorage.app",
+  messagingSenderId: "507429367336",
+  appId: "1:507429367336:web:796e381a780a33ef98cf1d",
+  measurementId: "G-5ZQE5M1SWC"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -24,6 +25,8 @@ let currentUser = null;
 // Utility Functions
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
+    if (!toast) return;
+    
     const toastMessage = document.getElementById('toast-message');
     const toastIcon = toast.querySelector('.toast-icon i');
     
@@ -42,7 +45,7 @@ function showToast(message, type = 'success') {
     }
     
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    setTimeout(() => toast.classList.remove('show'), 4000);
 }
 
 function setLoading(buttonId, loading) {
@@ -63,217 +66,196 @@ function setLoading(buttonId, loading) {
     }
 }
 
-// Signup Logic
+// ==================== SIGNUP (PENDING REQUESTS) ====================
 const signupForm = document.getElementById('signupForm');
 if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         setLoading('signupBtn', true);
         
-        const email = document.getElementById('newEmail').value;
-        const username = document.getElementById('newUsername').value;
+        const email = document.getElementById('newEmail').value.trim();
+        const username = document.getElementById('newUsername').value.trim();
         const password = document.getElementById('newPassword').value;
+        const fullName = document.getElementById('fullName')?.value.trim();
+        const employeeId = document.getElementById('employeeId')?.value.trim();
 
         try {
-            const snapshot = await get(child(ref(db), `users/${username}`));
-            if (snapshot.exists()) {
-                showToast('Username already exists!', 'error');
+            // Check duplicates
+            const existingRequest = await get(ref(db, `pendingRequests/${username}`));
+            const existingUser = await get(ref(db, `users/${username}`));
+            
+            if (existingRequest.exists() || existingUser.exists()) {
+                showToast('Username already exists/requested!', 'error');
                 setLoading('signupBtn', false);
                 return;
             }
 
-            await set(ref(db, 'users/' + username), {
-                email: email,
-                password: password,
-                createdAt: new Date().toLocaleString()
+            // Store PENDING request
+            await set(ref(db, `pendingRequests/${username}`), {
+                email, username, password, fullName: fullName || 'N/A', 
+                employeeId: employeeId || 'N/A',
+                requestedAt: new Date().toLocaleString('en-PH'),
+                status: 'pending'
             });
             
-            showToast('Account created successfully!');
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1000);
+            showToast(`✅ Request sent! Admin will review (ID: ${username})`);
+            signupForm.reset();
+            setLoading('signupBtn', false);
+            
         } catch (error) {
-            console.error("Signup Error:", error);
-            showToast('Signup failed: ' + error.message, 'error');
+            showToast('Request failed', 'error');
             setLoading('signupBtn', false);
         }
     });
 }
 
-// Login Logic
+// ==================== LOGIN ====================
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         setLoading('loginBtn', true);
         
-        const username = document.getElementById('username').value;
+        const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
 
         try {
-            const snapshot = await get(child(ref(db), `users/${username}`));
+            const snapshot = await get(ref(db, `users/${username}`));
             
-            if (snapshot.exists() && snapshot.val().password === password) {
+            if (snapshot.exists() && snapshot.val().password === password && snapshot.val().approved === true) {
                 currentUser = username;
                 sessionStorage.setItem('currentUser', username);
                 showToast('Login successful!');
-                setTimeout(() => {
-                    window.location.href = 'scanner.html';
-                }, 800);
+                
+                // Admin vs Secretary redirect
+                if (snapshot.val().role === 'admin') {
+                    setTimeout(() => window.location.href = 'admin.html', 800);
+                } else {
+                    setTimeout(() => window.location.href = 'scanner.html', 800);
+                }
             } else {
-                showToast('Invalid credentials', 'error');
-                setLoading('loginBtn', false);
-                document.getElementById('password').value = '';
+                showToast('Invalid credentials or pending approval', 'error');
             }
+            setLoading('loginBtn', false);
         } catch (error) {
-            console.error("Login Error:", error);
-            showToast('Login failed: ' + error.message, 'error');
+            showToast('Login failed', 'error');
             setLoading('loginBtn', false);
         }
     });
 }
 
-// Scanner Logic
+// ==================== SCANNER ====================
 function startScanner() {
     if (!document.getElementById('qr-reader')) return;
     
-    // Check if user is logged in
     currentUser = sessionStorage.getItem('currentUser');
     if (!currentUser) {
         showToast('Please login first', 'error');
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1000);
+        setTimeout(() => window.location.href = 'index.html', 1000);
         return;
     }
     
-    if (html5QrCode) {
-        html5QrCode.stop().catch(() => {});
-    }
+    if (html5QrCode) html5QrCode.stop().catch(() => {});
     
     html5QrCode = new Html5Qrcode("qr-reader");
-    
-    const config = { 
-        fps: 15, 
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
-    };
-    
     html5QrCode.start(
         { facingMode: "environment" }, 
-        config,
+        { fps: 15, qrbox: { width: 250, height: 250 } },
         async (decodedText) => {
             if (isProcessing) return;
             isProcessing = true;
 
             try {
-                const parts = decodedText.split('|');
-                const lrn = parts[0] || "N/A";
-                const studentName = parts[1] || "Unknown";
-                const grade = parts[2] || "N/A";
+                const [lrn, studentName, grade] = decodedText.split('|');
                 
-                // Save to Firebase
                 await push(ref(db, 'attendance'), {
-                    lrn: lrn,
-                    studentName: studentName,
-                    grade: grade,
+                    lrn: lrn || 'N/A',
+                    studentName: studentName || 'Unknown',
+                    grade: grade || 'N/A',
                     scannedAt: new Date().toISOString(),
                     scannedBy: currentUser
                 });
                 
-                // Update UI
-                addScanToList(studentName, grade);
+                addScanToList(studentName || 'Unknown', grade || 'N/A');
                 updateStats();
-                showToast(`Logged: ${studentName}`);
+                showToast(`✅ Logged: ${studentName}`);
                 
             } catch (error) {
-                console.error("Scan Error:", error);
                 showToast('Scan failed', 'error');
             } finally {
-                setTimeout(() => { isProcessing = false; }, 2000);
+                setTimeout(() => isProcessing = false, 1500);
             }
         },
-        (error) => {
-            // console.log("Scan error:", error);
-        }
-    ).catch(err => {
-        console.error("Scanner start error:", err);
-        showToast('Camera access denied', 'error');
-    });
+        () => {}
+    ).catch(() => showToast('Camera access denied', 'error'));
 }
 
 function addScanToList(name, grade) {
     const list = document.getElementById('scan-list');
     if (!list) return;
     
-    const time = new Date().toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
-    
     const item = document.createElement('div');
     item.className = 'scan-item';
     item.innerHTML = `
-        <div class="scan-icon">
-            <i class="fas fa-user-check"></i>
-        </div>
+        <div class="scan-icon"><i class="fas fa-user-check"></i></div>
         <div class="scan-info">
             <div class="scan-name">${name}</div>
-            <div class="scan-time">${grade} • ${time}</div>
+            <div class="scan-time">${grade} • ${new Date().toLocaleTimeString()}</div>
         </div>
     `;
-    
     list.insertBefore(item, list.firstChild);
-    
-    // Keep only last 5 scans
-    while (list.children.length > 5) {
-        list.removeChild(list.lastChild);
-    }
+    while (list.children.length > 5) list.removeChild(list.lastChild);
 }
 
 function updateStats() {
     scanCount++;
-    const countEl = document.getElementById('scan-count');
-    const timeEl = document.getElementById('last-scan');
-    
-    if (countEl) countEl.textContent = scanCount;
-    if (timeEl) {
-        timeEl.textContent = new Date().toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-    }
+    document.getElementById('scan-count')?.textContent = scanCount;
+    document.getElementById('last-scan')?.textContent = new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'});
 }
 
-// Logout
-const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-        if (html5QrCode) {
-            html5QrCode.stop().catch(() => {});
-            html5QrCode = null;
-        }
-        sessionStorage.removeItem('currentUser');
-        currentUser = null;
-        scanCount = 0;
-        showToast('Logged out successfully');
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 800);
-    });
-}
+// ==================== UTILITIES ====================
+window.togglePassword = (inputId, button) => {
+    const input = document.getElementById(inputId);
+    const icon = button.querySelector('i');
+    input.type = input.type === 'password' ? 'text' : 'password';
+    icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+};
 
-// Initialize scanner if on scanner page
-if (document.getElementById('qr-reader')) {
-    document.addEventListener('DOMContentLoaded', () => {
-        // Small delay to ensure DOM is fully ready
-        setTimeout(startScanner, 500);
-    });
-}
+window.emergencyLogout = () => {
+    sessionStorage.clear();
+    if (html5QrCode) html5QrCode.stop();
+    showToast('Logged out');
+    setTimeout(() => window.location.href = 'index.html', 800);
+};
 
-// Cleanup on page unload
-window.addEventListener('beforeunload', () => {
+window.pauseScanner = () => {
     if (html5QrCode) {
-        html5QrCode.stop().catch(() => {});
+        html5QrCode.stop();
+        showToast('Scanner paused');
     }
+};
+
+// ==================== ADMIN FUNCTIONS ====================
+window.approveUser = async (username) => {
+    try {
+        const data = (await get(ref(db, `pendingRequests/${username}`))).val();
+        if (data) {
+            await set(ref(db, `users/${username}`), {...data, approved: true, approvedAt: new Date().toISOString()});
+            await remove(ref(db, `pendingRequests/${username}`));
+            showToast(`✅ Approved: ${data.fullName}`);
+        }
+    } catch (e) {
+        showToast('Approval failed', 'error');
+    }
+};
+
+window.rejectUser = async (username) => {
+    await remove(ref(db, `pendingRequests/${username}`));
+    showToast('❌ Rejected');
+};
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('qr-reader')) setTimeout(startScanner, 500);
 });
+window.addEventListener('beforeunload', () => html5QrCode?.stop());
