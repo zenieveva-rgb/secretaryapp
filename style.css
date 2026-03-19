@@ -649,3 +649,8 @@ input:not(:placeholder-shown) ~ .floating-label {
         font-size: 1.2rem;
     }
 }
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius
