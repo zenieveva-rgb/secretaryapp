@@ -21,29 +21,62 @@ const PATHS = {
 };
 
 // ── TOAST ──
+// Creates its own toast element from scratch — works on ALL pages, no ID dependency
 function showToast(message, type = 'success') {
-    // works with both toast-message (index.html) and toast-msg (scanner.html)
-    const msg = document.getElementById('toast-message') 
-             || document.getElementById('toast-msg');
-    const icon = document.querySelector('#toast .toast-icon i') 
-              || document.querySelector('#toast i');
-    const toast = document.getElementById('toast');
+    const existing = document.getElementById('_toast_inject');
+    if (existing) existing.remove();
 
-    if (!toast) return;
+    const toast = document.createElement('div');
+    toast.id = '_toast_inject';
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        padding: 14px 22px;
+        background: rgba(10,10,15,0.96);
+        border: 1px solid ${type === 'error' ? '#ff416c' : '#05ffa1'};
+        color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        z-index: 99999;
+        font-size: 14px;
+        font-family: sans-serif;
+        max-width: 90vw;
+        opacity: 0;
+        transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
+    `;
 
-    if (msg) msg.textContent = message;
+    const iconEl = document.createElement('i');
+    iconEl.className = type === 'error'
+        ? 'fas fa-exclamation-triangle'
+        : 'fas fa-check-circle';
+    iconEl.style.cssText = `color: ${type === 'error' ? '#ff416c' : '#05ffa1'}; font-size: 18px; flex-shrink: 0;`;
 
-    if (type === 'error') {
-        toast.style.borderColor = '#ff416c';
-        if (icon) { icon.style.color = '#ff416c'; icon.className = 'fas fa-exclamation-triangle'; }
-    } else {
-        toast.style.borderColor = '#05ffa1';
-        if (icon) { icon.style.color = '#05ffa1'; icon.className = 'fas fa-check'; }
-    }
+    const textEl = document.createElement('span');
+    textEl.textContent = message;
 
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 4000);
+    toast.appendChild(iconEl);
+    toast.appendChild(textEl);
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+        });
+    });
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(80px)';
+        setTimeout(() => toast.remove(), 400);
+    }, 3500);
 }
+
 // ── LOADING ──
 function setLoading(btnId, show) {
     const btn = document.getElementById(btnId);
@@ -129,16 +162,12 @@ if (document.getElementById('qr-reader')) {
     const currentUser     = sessionStorage.getItem('currentUser');
     const currentUserName = sessionStorage.getItem('currentUserName') || currentUser;
 
-    // ── NOT LOGGED IN → show blocked, redirect after 2s ──
     if (!currentUser) {
         if (securityCheck)   securityCheck.style.display   = 'none';
         if (unauthorizedDiv) unauthorizedDiv.style.display = 'flex';
         setTimeout(() => window.location.href = 'index.html', 2000);
 
     } else {
-        // ── LOGGED IN → show user info, start scanner ──
-
-        // Show user info card
         const userInfoCard = document.getElementById('user-info-card');
         const userNameEl   = document.getElementById('current-user-name');
         if (userInfoCard) userInfoCard.style.display = 'flex';
@@ -169,7 +198,6 @@ if (document.getElementById('qr-reader')) {
             }
         }, 1000);
 
-        // Scan stats
         let scanCount = 0;
         let sessionScans = 0;
 
@@ -189,7 +217,6 @@ if (document.getElementById('qr-reader')) {
             list.prepend(item);
         }
 
-        // Start scanner
         window.startScanner = function() {
             const html5QrCode = new Html5Qrcode("qr-reader");
 
@@ -218,9 +245,8 @@ if (document.getElementById('qr-reader')) {
                         if (sessionScansEl) sessionScansEl.textContent = sessionScans;
                         if (lastScanEl)     lastScanEl.textContent     = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                         addToLog(name, grade, true);
-                        showToast(`✅ ${name} logged!`);
+                        showToast(`${name} logged successfully!`);
 
-                        // Update scanner status
                         const statusEl = document.getElementById('scanner-status');
                         if (statusEl) {
                             statusEl.innerHTML = '<span class="status-dot"></span> Scan Successful';
@@ -235,16 +261,14 @@ if (document.getElementById('qr-reader')) {
                         addToLog('Unknown', 'Error', false);
                     }
                 },
-                (errorMsg) => { /* ignore decode errors */ }
+                () => { /* ignore decode errors */ }
             ).then(() => {
-                // Camera started — hide loading overlay
                 if (securityCheck) securityCheck.style.display = 'none';
                 const statusEl = document.getElementById('scanner-status');
                 if (statusEl) statusEl.innerHTML = '<span class="status-dot"></span> Ready';
                 const cameraWarning = document.getElementById('camera-warning');
                 if (cameraWarning) cameraWarning.style.display = 'none';
             }).catch((err) => {
-                // Camera failed — hide loading, show warning
                 if (securityCheck) securityCheck.style.display = 'none';
                 const cameraWarning = document.getElementById('camera-warning');
                 if (cameraWarning) cameraWarning.style.display = 'flex';
@@ -253,7 +277,6 @@ if (document.getElementById('qr-reader')) {
                 console.error('Camera error:', err);
             });
 
-            // Pause / resume
             let paused = false;
             window.pauseScanner = function() {
                 const btn = document.getElementById('pause-btn');
@@ -269,13 +292,11 @@ if (document.getElementById('qr-reader')) {
             };
         };
 
-        // Logout
         window.emergencyLogout = function() {
             sessionStorage.clear();
             window.location.href = 'index.html';
         };
 
-        // Auto-start
         startScanner();
     }
 }
