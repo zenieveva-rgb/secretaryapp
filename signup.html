@@ -3,59 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secretary Pro | Sign Up</title>
+    <title>School Secretary | Account Request</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Background Elements -->
+    <!-- Animated Background -->
     <div class="bg-animation"></div>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
+    <div class="security-grid"></div>
 
     <!-- Toast Notification -->
     <div class="toast" id="toast">
-        <div class="toast-icon">
-            <i class="fas fa-check"></i>
-        </div>
+        <div class="toast-icon"><i class="fas fa-user-shield"></i></div>
         <div>
-            <div style="font-weight: 600; margin-bottom: 2px;">Success</div>
-            <div style="font-size: 0.9rem; opacity: 0.8;" id="toast-message">Account created successfully</div>
+            <div style="font-weight: 600; margin-bottom: 2px;">System Notice</div>
+            <div style="font-size: 0.9rem; opacity: 0.8;" id="toast-message">Processing request</div>
         </div>
     </div>
 
     <div class="container">
         <div class="glass-card">
+            <div class="security-badge" style="background: rgba(255, 42, 109, 0.2); border-color: rgba(255, 42, 109, 0.4);">
+                <i class="fas fa-user-plus" style="color: var(--accent);"></i>
+                <span style="color: var(--accent);">REGISTRATION PORTAL</span>
+            </div>
+
             <div class="header">
-                <div class="logo">
-                    <i class="fas fa-user-plus"></i>
+                <div class="logo" style="background: linear-gradient(135deg, var(--accent), #ff6b6b);">
+                    <i class="fas fa-id-card"></i>
                 </div>
-                <h1>Create Account</h1>
-                <p class="subtitle">Join the attendance system</p>
+                <h1>Request Access</h1>
+                <p class="subtitle">School secretary verification required</p>
             </div>
 
             <form id="signupForm">
+                <!-- Email with domain restriction -->
                 <div class="form-group">
                     <i class="fas fa-envelope input-icon"></i>
-                    <input type="email" id="newEmail" placeholder=" " required autocomplete="off">
-                    <label class="floating-label">Email Address</label>
+                    <input type="email" id="newEmail" placeholder=" " required autocomplete="off" 
+                           pattern="[a-z0-9._%+-]+@(school\\.edu|edu\\.ph|\\.edu)$"
+                           title="Only official school email addresses allowed (.edu domains)">
+                    <label class="floating-label">School Email Address</label>
                 </div>
 
+                <!-- Secretary ID -->
                 <div class="form-group">
-                    <i class="fas fa-user input-icon"></i>
-                    <input type="text" id="newUsername" placeholder=" " required autocomplete="off">
-                    <label class="floating-label">Username</label>
+                    <i class="fas fa-user-tie input-icon"></i>
+                    <input type="text" id="newUsername" placeholder=" " required autocomplete="off"
+                           pattern="[a-zA-Z0-9_]{4,20}" title="4-20 characters, alphanumeric only">
+                    <label class="floating-label">Desired Secretary ID</label>
                 </div>
 
+                <!-- Full Name -->
+                <div class="form-group">
+                    <i class="fas fa-signature input-icon"></i>
+                    <input type="text" id="fullName" placeholder=" " required autocomplete="off">
+                    <label class="floating-label">Full Legal Name</label>
+                </div>
+
+                <!-- Employee ID -->
+                <div class="form-group">
+                    <i class="fas fa-hashtag input-icon"></i>
+                    <input type="text" id="employeeId" placeholder=" " required autocomplete="off">
+                    <label class="floating-label">School Employee ID</label>
+                </div>
+
+                <!-- Password -->
                 <div class="form-group">
                     <i class="fas fa-lock input-icon"></i>
-                    <input type="password" id="newPassword" placeholder=" " required>
-                    <label class="floating-label">Password</label>
+                    <input type="password" id="newPassword" placeholder=" " required minlength="8">
+                    <label class="floating-label">Create Password (min 8 chars)</label>
+                    <button type="button" class="toggle-password" onclick="togglePassword('newPassword', this)">
+                        <i class="fas fa-eye"></i>
+                    </button>
                 </div>
 
-                <button type="submit" class="btn btn-primary" id="signupBtn">
-                    <span>Create Account</span>
+                <!-- Anti-bot honeypot -->
+                <div class="honeypot" style="display: none;">
+                    <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                </div>
+
+                <!-- Admin Approval Notice -->
+                <div class="approval-notice">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <strong>Admin Approval Required</strong>
+                        <p>Your request will be reviewed by the school administrator. You will receive an email notification once approved.</p>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="signupBtn" style="background: linear-gradient(135deg, var(--accent), #ff6b6b);">
+                    <span><i class="fas fa-paper-plane"></i> Submit Request</span>
                     <div class="spinner"></div>
                 </button>
             </form>
@@ -63,6 +104,12 @@
             <a href="index.html" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Login
             </a>
+
+            <div class="security-footer">
+                <div class="security-item"><i class="fas fa-shield-alt"></i> Verified</div>
+                <div class="security-item"><i class="fas fa-user-check"></i> Reviewed</div>
+                <div class="security-item"><i class="fas fa-envelope"></i> Notified</div>
+            </div>
         </div>
     </div>
 
