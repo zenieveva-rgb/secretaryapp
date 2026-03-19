@@ -11,17 +11,15 @@ const firebaseConfig = {
   appId: "1:507429367336:web:796e381a780a33ef98cf1d"
 };
 
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const PATHS = {
   pendingRequests: 'pendingRequests',
-  users: 'users', 
+  users: 'users',
   attendance: 'attendance'
 };
 
-// Toast function
 function showToast(message, type = 'success') {
     let toast = document.getElementById('toast');
     if (!toast) {
@@ -37,35 +35,42 @@ function showToast(message, type = 'success') {
         toast.innerHTML = '<i class="fas fa-check" style="font-size:20px;color:#05ffa1;"></i><span id="toast-msg"></span>';
         document.body.appendChild(toast);
     }
-    
-    const msg = document.getElementById('toast-msg') || toast.querySelector('#toast-msg');
+    const msg = document.getElementById('toast-msg') || toast.querySelector('span');
     const icon = toast.querySelector('i');
     msg.textContent = message;
-    
     if (type === 'error') {
         toast.style.borderColor = '#ff416c';
         icon.style.color = '#ff416c';
         icon.className = 'fas fa-exclamation-triangle';
+    } else {
+        toast.style.borderColor = '#05ffa1';
+        icon.style.color = '#05ffa1';
+        icon.className = 'fas fa-check';
     }
-    
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 4000);
 }
 
+// BUG 3 FIXED — insertAdjacentHTML returns undefined, so spinner was never stored.
+// Now we check for existing spinner first, then create it properly if missing.
 function setLoading(btnId, show) {
     const btn = document.getElementById(btnId);
     if (!btn) return;
-    const spinner = btn.querySelector('.spinner') || btn.insertAdjacentHTML('beforeend', '<div class="spinner"></div>');
-    const text = btn.querySelector('span') || btn;
-    
+    let spinner = btn.querySelector('.spinner');
+    if (!spinner) {
+        spinner = document.createElement('div');
+        spinner.className = 'spinner';
+        btn.appendChild(spinner);
+    }
+    const textSpan = btn.querySelector('span');
     if (show) {
         btn.disabled = true;
-        text.style.opacity = '0';
-        btn.querySelector('.spinner').style.display = 'block';
+        if (textSpan) textSpan.style.opacity = '0';
+        spinner.style.display = 'block';
     } else {
         btn.disabled = false;
-        text.style.opacity = '1';
-        btn.querySelector('.spinner').style.display = 'none';
+        if (textSpan) textSpan.style.opacity = '1';
+        spinner.style.display = 'none';
     }
 }
 
@@ -74,7 +79,7 @@ if (document.getElementById('signupForm')) {
     document.getElementById('signupForm').addEventListener('submit', async e => {
         e.preventDefault();
         setLoading('signupBtn', true);
-        
+
         const formData = {
             email: document.getElementById('newEmail').value,
             username: document.getElementById('newUsername').value.toLowerCase(),
@@ -83,54 +88,62 @@ if (document.getElementById('signupForm')) {
             employeeId: document.getElementById('employeeId')?.value || 'N/A',
             requestedAt: new Date().toISOString()
         };
-        
+
         try {
             await set(ref(db, `${PATHS.pendingRequests}/${formData.username}`), formData);
-           showToast(`✅ SAVED! Check Firebase: pendingRequests/${formData.username}`);
+            showToast('Request submitted! Admin will review soon.');
             document.getElementById('signupForm').reset();
-        } catch(e) {
-            showToast('❌ Error: ' + e.message, 'error');
+
+            // BUG 4 FIXED — show the success screen after a successful write
+            const successScreen = document.getElementById('successScreen');
+            if (successScreen) successScreen.style.display = 'flex';
+
+        } catch (err) {
+            showToast('Error: ' + err.message, 'error');
         }
         setLoading('signupBtn', false);
     });
 }
 
-// LOGIN  
+// LOGIN
 if (document.getElementById('loginForm')) {
     document.getElementById('loginForm').addEventListener('submit', async e => {
         e.preventDefault();
         setLoading('loginBtn', true);
-        
+
         const username = document.getElementById('username').value.toLowerCase();
         const password = document.getElementById('password').value;
-        
+
         try {
             const userSnap = await get(ref(db, `${PATHS.users}/${username}`));
             if (userSnap.exists()) {
                 const user = userSnap.val();
                 if (user.password === password && user.approved) {
                     sessionStorage.setItem('currentUser', username);
-                    showToast('✅ Login successful!');
+                    showToast('Login successful!');
                     setTimeout(() => window.location.href = 'scanner.html', 1000);
                 } else {
-                    showToast('❌ Invalid credentials', 'error');
+                    showToast('Invalid credentials or account not approved.', 'error');
                 }
             } else {
-                showToast('❌ User not found', 'error');
+                showToast('User not found.', 'error');
             }
-        } catch(e) {
-            showToast('❌ Login failed', 'error');
+        } catch (err) {
+            showToast('Login failed: ' + err.message, 'error');
         }
         setLoading('loginBtn', false);
     });
 }
 
 // SCANNER
-let html5QrCode;
 if (document.getElementById('qr-reader')) {
     const currentUser = sessionStorage.getItem('currentUser');
-    if (currentUser) {
-        html5QrCode = new Html5Qrcode("qr-reader");
+
+    // BUG 5 FIXED — redirect to login if no session instead of silently doing nothing
+    if (!currentUser) {
+        window.location.href = 'index.html';
+    } else {
+        const html5QrCode = new Html5Qrcode("qr-reader");
         html5QrCode.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 250, height: 250 } },
@@ -140,9 +153,9 @@ if (document.getElementById('qr-reader')) {
                     await push(ref(db, `${PATHS.attendance}`), {
                         lrn, name, grade, scannedBy: currentUser, time: new Date().toISOString()
                     });
-                    showToast(`✅ ${name} logged!`);
-                } catch(e) {
-                    showToast('❌ Invalid QR', 'error');
+                    showToast(`${name} logged!`);
+                } catch (err) {
+                    showToast('Invalid QR code.', 'error');
                 }
             }
         );
