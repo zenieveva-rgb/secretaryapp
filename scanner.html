@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secretary | Scanner</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-container">
+        <div class="glass-card">
+            <div id="qr-container" style="display:flex; flex-direction:column; align-items:center;">
+                <h2 class="neon-text">SCANNER</h2>
+                <p id="logged-in-user" style="color:#00ffcc; font-size:0.85rem; margin-bottom:10px;"></p>
+                <div class="scanner-frame">
+                    <div id="qr-reader" style="width:100%;"></div>
+                    <div class="corner top-left"></div>
+                    <div class="corner top-right"></div>
+                    <div class="corner bottom-left"></div>
+                    <div class="corner bottom-right"></div>
+                    <div class="scan-line"></div>
+                </div>
+                <h3 class="neon-text-small" id="scan-status">READY TO SCAN</h3>
+                <div id="last-scan-info" style="color:rgba(255,255,255,0.6); font-size:0.8rem; margin:8px 0;"></div>
+                <button id="logout-btn" class="logout-btn">Logout</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -3,115 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Secretary | Account Request</title>
+    <title>Secretary | Sign Up</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .success-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #05ffa1, #00cc88);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-        .success-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            animation: bounce 1s ease;
-        }
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-20px); }
-            60% { transform: translateY(-10px); }
-        }
-        .success-title { font-size: 2.5em; font-weight: bold; margin-bottom: 10px; }
-        .success-text { font-size: 1.2em; margin-bottom: 20px; }
-        .btn-back { 
-            background: rgba(255,255,255,0.2); 
-            color: white; 
-            border: 2px solid rgba(255,255,255,0.3);
-            padding: 12px 24px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .btn-back:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-    <script type="module" src="script.js"></script>
 <body>
-    <!-- Background -->
-    <div class="bg-animation"></div>
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-
-    <!-- SUCCESS SCREEN -->
-    <div class="success-screen" id="successScreen">
-        <div class="success-icon">✅</div>
-        <div class="success-title">Account Request Submitted!</div>
-        <div class="success-text">Your data has been saved to database successfully.<br>Admin will review within 24 hours.</div>
-        <a href="index.html" class="btn-back">
-            <i class="fas fa-sign-in-alt"></i> Go to Login
-        </a>
-    </div>
-
-    <div class="container">
-        <div class="glass-card" id="mainCard">
-            <div class="header">
-                <div class="logo" style="background: linear-gradient(135deg, #ff416c, #ff6b6b);">
-                    <i class="fas fa-user-plus"></i>
-                </div>
-                <h1>Request Secretary Account</h1>
-                <p class="subtitle">Admin approval required</p>
-            </div>
-
+    <div class="background-container">
+        <div class="glass-card">
+            <h2>REGISTER</h2>
+            <p>Enter your details to join</p>
             <form id="signupForm">
-                <div class="form-group">
-                    <i class="fas fa-envelope input-icon"></i>
-                    <input type="email" id="newEmail" placeholder=" " required>
-                    <label class="floating-label">Email Address</label>
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="newEmail" required>
+                    <label for="newEmail">Email Address</label>
                 </div>
-
-                <div class="form-group">
-                    <i class="fas fa-user input-icon"></i>
-                    <input type="text" id="newUsername" placeholder=" " required minlength="3" maxlength="20">
-                    <label class="floating-label">Username (3-20 chars)</label>
+                <div class="input-group">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="newUsername" required>
+                    <label for="newUsername">Create Username</label>
                 </div>
-
-                <div class="form-group">
-                    <i class="fas fa-user-tie input-icon"></i>
-                    <input type="text" id="fullName" placeholder=" " required>
-                    <label class="floating-label">Full Name</label>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="newPassword" required>
+                    <label for="newPassword">Create Password</label>
                 </div>
-
-                <div class="form-group">
-                    <i class="fas fa-id-badge input-icon"></i>
-                    <input type="text" id="employeeId" placeholder=" " required>
-                    <label class="floating-label">Employee ID</label>
+                <div>
+                    <button type="submit" class="login-btn" id="signupBtn">SIGN UP</button>
                 </div>
-
-                <div class="form-group">
-                    <i class="fas fa-lock input-icon"></i>
-                    <input type="password" id="newPassword" placeholder=" " required minlength="6">
-                    <label class="floating-label">Password (6+ chars)</label>
+                <div class="footer-links">
+                    <a href="index.html" class="signup-link">Back to Login</a>
                 </div>
-
-                <button type="submit" class="btn btn-primary" id="signupBtn">
-                    <span><i class="fas fa-paper-plane"></i> Submit Request</span>
-                    <div class="spinner"></div>
-                </button>
             </form>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
