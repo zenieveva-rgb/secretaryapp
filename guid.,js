@@ -1,0 +1,80 @@
+/* ── PROGRESS BAR ── */
+const progressBar = document.getElementById('progressBar');
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const pct = doc.scrollTop / (doc.scrollHeight - doc.clientHeight);
+  progressBar.style.width = (pct * 100) + '%';
+}, { passive: true });
+
+/* ── COUNTER ANIMATION ── */
+function animateCounter(el, target, duration = 1400) {
+  let start = null;
+  const ease = t => 1 - Math.pow(1 - t, 4);
+  function step(ts) {
+    if (!start) start = ts;
+    const progress = Math.min((ts - start) / duration, 1);
+    el.textContent = Math.round(ease(progress) * target);
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(step);
+}
+
+/* ── INTERSECTION OBSERVER ── */
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const el = entry.target;
+    el.classList.add('in-view');
+
+    // Counter trigger
+    if (el.classList.contains('hero-counter')) {
+      animateCounter(document.getElementById('counterEl'), 6);
+    }
+
+    io.unobserve(el);
+  });
+}, { threshold: 0.15 });
+
+// Observe all animated elements
+document.querySelectorAll('.reveal, .step-block, .callout, .qr-format-card').forEach(el => {
+  io.observe(el);
+});
+
+// Hero counter
+const heroCounter = document.querySelector('.hero-counter');
+if (heroCounter) io.observe(heroCounter);
+
+/* ── STEP BLOCKS hover glow on number ── */
+document.querySelectorAll('.step-block').forEach(block => {
+  block.addEventListener('mouseenter', () => {
+    block.querySelector('.step-number').style.color = '#fff';
+  });
+  block.addEventListener('mouseleave', () => {
+    block.querySelector('.step-number').style.color = '';
+  });
+});
+
+/* ── SMOOTH ACTIVE NAV ── */
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.site-nav a');
+
+const navIo = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => {
+        a.style.color = '';
+        a.style.borderColor = '';
+        a.style.background = '';
+      });
+      const active = document.querySelector(`.site-nav a[href="#${entry.target.id}"]`);
+      if (active) {
+        active.style.color = 'var(--cyan)';
+        active.style.borderColor = 'rgba(0,229,255,0.2)';
+        active.style.background = 'rgba(0,229,255,0.05)';
+      }
+    }
+  });
+}, { threshold: 0.4 });
+
+sections.forEach(s => navIo.observe(s));
