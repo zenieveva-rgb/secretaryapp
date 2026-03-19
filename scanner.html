@@ -6,9 +6,6 @@
     <title>School Secretary | Secure Scanner</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Security Meta Tags -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://www.gstatic.com 'unsafe-inline'; style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; connect-src https://*.firebaseio.com https://*.googleapis.com; media-src 'self' blob:; img-src 'self' data: blob:;">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
 </head>
 <body>
     <!-- Background -->
@@ -27,31 +24,30 @@
         </div>
     </div>
 
-    <!-- Security Verification Overlay (shown while checking auth) -->
+    <!-- Security Verification Overlay -->
     <div id="security-check" class="security-overlay">
         <div class="security-check-content">
             <div class="security-spinner"></div>
             <h3>Verifying Access Credentials...</h3>
-            <p>Multi-factor authentication check in progress</p>
+            <p>Please wait...</p>
         </div>
     </div>
 
-    <!-- Unauthorized Access Blocked Overlay -->
+    <!-- Unauthorized Access Overlay -->
     <div id="unauthorized-overlay" class="security-overlay" style="display: none; background: rgba(220, 38, 38, 0.95);">
         <div class="security-check-content">
             <i class="fas fa-ban" style="font-size: 64px; color: #ff4444; margin-bottom: 20px;"></i>
             <h3 style="color: #ff4444;">Access Denied</h3>
-            <p>Your credentials do not have scanner privileges.</p>
-            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">This incident has been logged.</p>
-            <button onclick="emergencyLogout()" class="btn btn-danger" style="margin-top: 20px; max-width: 200px;">
-                <i class="fas fa-sign-out-alt"></i> Return to Login
+            <p>You must log in first.</p>
+            <button onclick="window.location.href='index.html'" class="btn btn-danger" style="margin-top: 20px; max-width: 200px;">
+                <i class="fas fa-sign-in-alt"></i> Go to Login
             </button>
         </div>
     </div>
 
     <div class="container">
         <div class="glass-card" style="max-width: 500px;">
-            <!-- Live Security Status -->
+
             <div class="live-security-bar">
                 <div class="security-status">
                     <span class="status-dot"></span>
@@ -75,9 +71,7 @@
 
             <!-- User Info Card -->
             <div class="user-info-card" id="user-info-card" style="display: none;">
-                <div class="user-avatar">
-                    <i class="fas fa-user-shield"></i>
-                </div>
+                <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
                 <div class="user-details">
                     <div class="user-name" id="current-user-name">Loading...</div>
                     <div class="user-role">Verified Secretary</div>
@@ -113,14 +107,12 @@
                     <div class="corner corner-bl"></div>
                     <div class="corner corner-br"></div>
                     <div class="scan-line"></div>
-                    <!-- Security watermark -->
                     <div class="security-watermark">SECURE SCANNER</div>
                 </div>
-                <!-- Camera permission warning -->
                 <div id="camera-warning" class="camera-warning" style="display: none;">
                     <i class="fas fa-exclamation-triangle"></i>
                     <p>Camera access required for scanning</p>
-                    <button onclick="requestCamera()" class="btn btn-primary" style="margin-top: 10px; padding: 10px 20px; font-size: 0.9rem;">
+                    <button onclick="startScanner()" class="btn btn-primary" style="margin-top: 10px; padding: 10px 20px; font-size: 0.9rem;">
                         Enable Camera
                     </button>
                 </div>
@@ -133,30 +125,29 @@
                 <div class="section-title">
                     <i class="fas fa-shield-alt"></i> Security Activity Log
                 </div>
-                <div class="scan-list" id="scan-list">
-                    <!-- Activity items added here -->
-                </div>
+                <div class="scan-list" id="scan-list"></div>
             </div>
 
-            <!-- Emergency Controls -->
+            <!-- Controls -->
             <div class="emergency-controls">
                 <button onclick="pauseScanner()" class="btn btn-warning" id="pause-btn" style="flex: 1; background: linear-gradient(135deg, #f59e0b, #d97706);">
                     <i class="fas fa-pause"></i> Pause
                 </button>
                 <button onclick="emergencyLogout()" class="btn btn-danger" style="flex: 2;">
-                    <i class="fas fa-sign-out-alt"></i> Emergency Exit
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
 
             <div class="security-footer" style="margin-top: 20px;">
-                <div class="security-item" title="End-to-end encrypted"><i class="fas fa-lock"></i> TLS 1.3</div>
-                <div class="security-item" title="Real-time monitoring active"><i class="fas fa-eye"></i> Monitored</div>
-                <div class="security-item" title="Session expires in 30 min"><i class="fas fa-clock"></i> <span id="countdown">30:00</span></div>
+                <div class="security-item"><i class="fas fa-lock"></i> TLS 1.3</div>
+                <div class="security-item"><i class="fas fa-eye"></i> Monitored</div>
+                <div class="security-item"><i class="fas fa-clock"></i> <span id="countdown">30:00</span></div>
             </div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- Load QR library FIRST, then script.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script type="module" src="script.js"></script>
 </body>
 </html>
