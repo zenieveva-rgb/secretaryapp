@@ -86,7 +86,7 @@ if (document.getElementById('signupForm')) {
         
         try {
             await set(ref(db, `${PATHS.pendingRequests}/${formData.username}`), formData);
-            showToast(`✅ SAVED! Check Firebase: secretary/pendingRequests/${formData.username}`);
+           showToast(`✅ SAVED! Check Firebase: pendingRequests/${formData.username}`);
             document.getElementById('signupForm').reset();
         } catch(e) {
             showToast('❌ Error: ' + e.message, 'error');
