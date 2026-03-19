@@ -20,6 +20,7 @@ const PATHS = {
   attendance: 'attendance'
 };
 
+// ── TOAST ──
 function showToast(message, type = 'success') {
     let toast = document.getElementById('toast');
     if (!toast) {
@@ -51,8 +52,7 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.classList.remove('show'), 4000);
 }
 
-// BUG 3 FIXED — insertAdjacentHTML returns undefined, so spinner was never stored.
-// Now we check for existing spinner first, then create it properly if missing.
+// ── LOADING ──
 function setLoading(btnId, show) {
     const btn = document.getElementById(btnId);
     if (!btn) return;
@@ -74,12 +74,11 @@ function setLoading(btnId, show) {
     }
 }
 
-// SIGNUP
+// ── SIGNUP ──
 if (document.getElementById('signupForm')) {
     document.getElementById('signupForm').addEventListener('submit', async e => {
         e.preventDefault();
         setLoading('signupBtn', true);
-
         const formData = {
             email: document.getElementById('newEmail').value,
             username: document.getElementById('newUsername').value.toLowerCase(),
@@ -88,16 +87,12 @@ if (document.getElementById('signupForm')) {
             employeeId: document.getElementById('employeeId')?.value || 'N/A',
             requestedAt: new Date().toISOString()
         };
-
         try {
             await set(ref(db, `${PATHS.pendingRequests}/${formData.username}`), formData);
             showToast('Request submitted! Admin will review soon.');
             document.getElementById('signupForm').reset();
-
-            // BUG 4 FIXED — show the success screen after a successful write
             const successScreen = document.getElementById('successScreen');
             if (successScreen) successScreen.style.display = 'flex';
-
         } catch (err) {
             showToast('Error: ' + err.message, 'error');
         }
@@ -105,21 +100,20 @@ if (document.getElementById('signupForm')) {
     });
 }
 
-// LOGIN
+// ── LOGIN ──
 if (document.getElementById('loginForm')) {
     document.getElementById('loginForm').addEventListener('submit', async e => {
         e.preventDefault();
         setLoading('loginBtn', true);
-
         const username = document.getElementById('username').value.toLowerCase();
         const password = document.getElementById('password').value;
-
         try {
             const userSnap = await get(ref(db, `${PATHS.users}/${username}`));
             if (userSnap.exists()) {
                 const user = userSnap.val();
-                if (user.password === password && user.approved) {
+                if (user.password === password && user.approved === true) {
                     sessionStorage.setItem('currentUser', username);
+                    sessionStorage.setItem('currentUserName', user.fullName || username);
                     showToast('Login successful!');
                     setTimeout(() => window.location.href = 'scanner.html', 1000);
                 } else {
@@ -135,30 +129,162 @@ if (document.getElementById('loginForm')) {
     });
 }
 
-// SCANNER
+// ── SCANNER ──
 if (document.getElementById('qr-reader')) {
-    const currentUser = sessionStorage.getItem('currentUser');
 
-    // BUG 5 FIXED — redirect to login if no session instead of silently doing nothing
+    const securityCheck   = document.getElementById('security-check');
+    const unauthorizedDiv = document.getElementById('unauthorized-overlay');
+    const currentUser     = sessionStorage.getItem('currentUser');
+    const currentUserName = sessionStorage.getItem('currentUserName') || currentUser;
+
+    // ── NOT LOGGED IN → show blocked, redirect after 2s ──
     if (!currentUser) {
-        window.location.href = 'index.html';
+        if (securityCheck)   securityCheck.style.display   = 'none';
+        if (unauthorizedDiv) unauthorizedDiv.style.display = 'flex';
+        setTimeout(() => window.location.href = 'index.html', 2000);
+
     } else {
-        const html5QrCode = new Html5Qrcode("qr-reader");
-        html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            async text => {
-                try {
-                    const [lrn, name, grade] = text.split('|');
-                    await push(ref(db, `${PATHS.attendance}`), {
-                        lrn, name, grade, scannedBy: currentUser, time: new Date().toISOString()
-                    });
-                    showToast(`${name} logged!`);
-                } catch (err) {
-                    showToast('Invalid QR code.', 'error');
-                }
+        // ── LOGGED IN → show user info, start scanner ──
+
+        // Show user info card
+        const userInfoCard = document.getElementById('user-info-card');
+        const userNameEl   = document.getElementById('current-user-name');
+        if (userInfoCard) userInfoCard.style.display = 'flex';
+        if (userNameEl)   userNameEl.textContent = currentUserName;
+
+        // Session timer
+        let seconds = 0;
+        const timerEl = document.getElementById('session-timer');
+        setInterval(() => {
+            seconds++;
+            const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+            const s = String(seconds % 60).padStart(2, '0');
+            if (timerEl) timerEl.textContent = `Session: ${m}:${s}`;
+        }, 1000);
+
+        // Countdown 30 min
+        let countdown = 30 * 60;
+        const countdownEl = document.getElementById('countdown');
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            const m = String(Math.floor(countdown / 60)).padStart(2, '0');
+            const s = String(countdown % 60).padStart(2, '0');
+            if (countdownEl) countdownEl.textContent = `${m}:${s}`;
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                showToast('Session expired. Logging out...', 'error');
+                setTimeout(() => emergencyLogout(), 2000);
             }
-        );
+        }, 1000);
+
+        // Scan stats
+        let scanCount = 0;
+        let sessionScans = 0;
+
+        function addToLog(name, grade, success = true) {
+            const list = document.getElementById('scan-list');
+            if (!list) return;
+            const item = document.createElement('div');
+            item.className = 'scan-item';
+            item.innerHTML = `
+                <div class="scan-icon" style="background:${success ? 'rgba(5,255,161,0.1)' : 'rgba(255,65,108,0.1)'}">
+                    <i class="fas fa-${success ? 'check' : 'times'}" style="color:${success ? 'var(--success)' : '#ff416c'}"></i>
+                </div>
+                <div class="scan-info">
+                    <div class="scan-name">${name}</div>
+                    <div class="scan-time">${grade} · ${new Date().toLocaleTimeString()}</div>
+                </div>`;
+            list.prepend(item);
+        }
+
+        // Start scanner
+        window.startScanner = function() {
+            const html5QrCode = new Html5Qrcode("qr-reader");
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                async (text) => {
+                    try {
+                        const parts = text.split('|');
+                        if (parts.length < 3) {
+                            showToast('Invalid QR format. Use LRN|Name|Grade', 'error');
+                            return;
+                        }
+                        const [lrn, name, grade] = parts;
+                        await push(ref(db, PATHS.attendance), {
+                            lrn, name, grade,
+                            scannedBy: currentUser,
+                            time: new Date().toISOString()
+                        });
+                        scanCount++;
+                        sessionScans++;
+                        const scanCountEl    = document.getElementById('scan-count');
+                        const sessionScansEl = document.getElementById('session-scans');
+                        const lastScanEl     = document.getElementById('last-scan');
+                        if (scanCountEl)    scanCountEl.textContent    = scanCount;
+                        if (sessionScansEl) sessionScansEl.textContent = sessionScans;
+                        if (lastScanEl)     lastScanEl.textContent     = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                        addToLog(name, grade, true);
+                        showToast(`✅ ${name} logged!`);
+
+                        // Update scanner status
+                        const statusEl = document.getElementById('scanner-status');
+                        if (statusEl) {
+                            statusEl.innerHTML = '<span class="status-dot"></span> Scan Successful';
+                            statusEl.style.borderColor = 'rgba(5,255,161,0.5)';
+                            setTimeout(() => {
+                                statusEl.innerHTML = '<span class="status-dot"></span> Ready';
+                                statusEl.style.borderColor = '';
+                            }, 2000);
+                        }
+                    } catch (err) {
+                        showToast('Failed to save: ' + err.message, 'error');
+                        addToLog('Unknown', 'Error', false);
+                    }
+                },
+                (errorMsg) => { /* ignore decode errors */ }
+            ).then(() => {
+                // Camera started — hide loading overlay
+                if (securityCheck) securityCheck.style.display = 'none';
+                const statusEl = document.getElementById('scanner-status');
+                if (statusEl) statusEl.innerHTML = '<span class="status-dot"></span> Ready';
+                const cameraWarning = document.getElementById('camera-warning');
+                if (cameraWarning) cameraWarning.style.display = 'none';
+            }).catch((err) => {
+                // Camera failed — hide loading, show warning
+                if (securityCheck) securityCheck.style.display = 'none';
+                const cameraWarning = document.getElementById('camera-warning');
+                if (cameraWarning) cameraWarning.style.display = 'flex';
+                const statusEl = document.getElementById('scanner-status');
+                if (statusEl) statusEl.innerHTML = '<span class="status-dot"></span> Camera Error';
+                console.error('Camera error:', err);
+            });
+
+            // Pause / resume
+            let paused = false;
+            window.pauseScanner = function() {
+                const btn = document.getElementById('pause-btn');
+                if (!paused) {
+                    html5QrCode.pause();
+                    paused = true;
+                    if (btn) btn.innerHTML = '<i class="fas fa-play"></i> Resume';
+                } else {
+                    html5QrCode.resume();
+                    paused = false;
+                    if (btn) btn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                }
+            };
+        };
+
+        // Logout
+        window.emergencyLogout = function() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        };
+
+        // Auto-start
+        startScanner();
     }
 }
 
