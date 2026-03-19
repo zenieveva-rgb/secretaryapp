@@ -22,36 +22,28 @@ const PATHS = {
 
 // ── TOAST ──
 function showToast(message, type = 'success') {
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.className = 'toast';
-        toast.style.cssText = `
-            position:fixed;bottom:30px;left:50%;transform:translateX(-50%);padding:16px 24px;
-            background:rgba(10,10,15,0.95);border:1px solid #05ffa1;color:white;border-radius:12px;
-            display:flex;align-items:center;gap:12px;box-shadow:0 20px 40px rgba(0,0,0,0.4);
-            z-index:10000;font-size:14px;max-width:90vw;
-        `;
-        toast.innerHTML = '<i class="fas fa-check" style="font-size:20px;color:#05ffa1;"></i><span id="toast-msg"></span>';
-        document.body.appendChild(toast);
-    }
-const msg = document.getElementById('toast-msg') || document.getElementById('toast-message') || toast.querySelector('span');
-    const icon = toast.querySelector('i');
-    msg.textContent = message;
+    // works with both toast-message (index.html) and toast-msg (scanner.html)
+    const msg = document.getElementById('toast-message') 
+             || document.getElementById('toast-msg');
+    const icon = document.querySelector('#toast .toast-icon i') 
+              || document.querySelector('#toast i');
+    const toast = document.getElementById('toast');
+
+    if (!toast) return;
+
+    if (msg) msg.textContent = message;
+
     if (type === 'error') {
         toast.style.borderColor = '#ff416c';
-        icon.style.color = '#ff416c';
-        icon.className = 'fas fa-exclamation-triangle';
+        if (icon) { icon.style.color = '#ff416c'; icon.className = 'fas fa-exclamation-triangle'; }
     } else {
         toast.style.borderColor = '#05ffa1';
-        icon.style.color = '#05ffa1';
-        icon.className = 'fas fa-check';
+        if (icon) { icon.style.color = '#05ffa1'; icon.className = 'fas fa-check'; }
     }
+
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 4000);
 }
-
 // ── LOADING ──
 function setLoading(btnId, show) {
     const btn = document.getElementById(btnId);
